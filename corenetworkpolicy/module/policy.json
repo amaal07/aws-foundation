@@ -1,0 +1,94 @@
+{
+    "version": "2021.12",
+    "core-network-configuration": {
+        "VpnEcmpSupport": "enable",
+        "asn-ranges": [
+            "64512-65534"
+        ],
+      "EdgeLocations": [
+        {
+          "Location": "us-east-1",
+          "Asn": 64512
+        },
+        {
+          "Location": "us-west-2",
+          "Asn": 64513
+        }
+      ]
+    },
+    "Segments": [
+      {
+        "Name": "Shared-Services",
+        "Description": "Central shared segment for common services",
+        "RequireAttachmentAcceptance": false,
+        "isolate-attachments": false,
+        "Tags": {
+          "Category": "Network",
+          "Environment": "Shared"
+        }
+      },
+      {
+        "Name": "Production",
+        "Description": "Production workload segment",
+        "RequireAttachmentAcceptance": false,
+        "isolate-attachments": true,
+        "Tags": {
+          "Environment": "Production"
+        }
+      },
+      {
+        "Name": "Development",
+        "Description": "Development and testing segment",
+        "RequireAttachmentAcceptance": false,
+        "isolate-attachments": true,
+        "Tags": {
+          "Environment": "Development"
+        }
+      }
+    ],
+    "SegmentActions": [
+      {
+        "Action": "share",
+        "Mode": "attachment-route",
+        "Segment": "Shared-Services",
+        "ShareWith": ["*"],
+        "Description": "Share the shared services segment with all attachments"
+      },
+      {
+        "Action": "create-route",
+        "Segment": "Shared-Services",
+        "Destinations": ["0.0.0.0/0"],
+        "Description": "Default route for shared services"
+      },
+      {
+        "Action": "create-route",
+        "Segment": "Production",
+        "Destinations": ["10.0.100.0/24"],
+        "Description": "Production network route"
+      },
+      {
+        "Action": "create-route",
+        "Segment": "Development",
+        "Destinations": ["10.0.100.0/24"],
+        "Description": "Development network route"
+      }
+    ],
+    "AttachmentPolicies": [
+      {
+        "RuleNumber": 100,
+        "ConditionLogic": "or",
+        "Conditions": [
+          {
+            "Type": "tag-value",
+            "Operator": "equals",
+            "Key": "NetworkTier",
+            "Value": "SharedServices"
+          }
+        ],
+        "Action": {
+          "AssociationMethod": "constant",
+          "Segment": "Shared-Services"
+        }
+      }
+    ]
+  }
