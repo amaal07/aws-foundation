@@ -1,0 +1,3 @@
+module cloudwan {
+    source = "../module"
+}
